@@ -703,8 +703,8 @@ function renderSetlistIndex() {
 }
 
 function setlistCardMarkup(sl) {
-  const scoreCount = sl.items.filter((it) => it.kind === "score").length;
-  const pendingCount = sl.items.length - scoreCount;
+  const available = sl.items.filter((item) => item.kind === "score" && state.items.some((candidate) => candidate.id === item.scoreId)).length;
+  const pendingCount = sl.items.length - available;
   const date = sl.date || "未定日期";
   const venue = sl.venue || "未填场地";
   return `<article class="setlist-card">
@@ -731,7 +731,7 @@ function renderSetlistDetail() {
   el.setlistIndex.hidden = true;
   el.setlistDetail.hidden = false;
   const shared = Boolean(setlistState.shared);
-  const scoreCount = sl.items.filter((it) => it.kind === "score").length;
+  const scoreCount = sl.items.filter((item) => item.kind === "score" && state.items.some((candidate) => candidate.id === item.scoreId)).length;
   const pendingCount = sl.items.length - scoreCount;
   const actions = shared
     ? `<button class="btn-dark" type="button" data-import-shared>导入到我的歌单</button>
@@ -761,27 +761,29 @@ function renderSetlistDetail() {
 
 function setlistItemMarkup(item, index, shared) {
   const score = item.kind === "score" ? state.items.find((candidate) => candidate.id === item.scoreId) : null;
-  const title = score ? score.title : item.kind === "pending" ? item.title : "曲谱已移除";
+  const missing = item.kind === "score" && !score;
+  const title = score ? score.title : (item.title || (item.kind === "pending" ? item.title : "曲谱已移除"));
   const sub = score
     ? `${item.composer || score.composer || "未标注作者"} · ${formatLabel(score)} ${totalPages(score)}P`
     : item.kind === "pending"
       ? (item.composer || "待补谱")
-      : "这份曲谱已不在当前曲库";
+      : (item.composer ? `${item.composer} · 曲谱已移除` : "曲谱已移除，可重新挂谱");
   const cover = score
     ? `<span class="item-cover"><img src="${escapeHtml(score.thumb)}" alt="" loading="lazy"></span>`
     : `<span class="item-cover pending-cover" aria-hidden="true">＋</span>`;
   const open = score
     ? `<button class="mini-btn" type="button" data-open-score="${escapeHtml(score.id)}">看谱</button>`
-    : (!shared && item.kind === "pending" ? `<button class="mini-btn" type="button" data-item-link="${index}">挂谱</button>` : "");
+    : (!shared && (item.kind === "pending" || missing) ? `<button class="mini-btn" type="button" data-item-link="${index}">挂谱</button>` : "");
+  const status = item.kind === "pending" ? "待补谱" : missing ? "已移除" : "";
   const edits = shared ? "" : `
     <button class="mini-btn" type="button" data-item-up="${index}" ${index === 0 ? "disabled" : ""} aria-label="上移">↑</button>
     <button class="mini-btn" type="button" data-item-down="${index}" ${index === (currentSetlist()?.items.length || 1) - 1 ? "disabled" : ""} aria-label="下移">↓</button>
     <button class="mini-btn danger" type="button" data-item-remove="${index}">移除</button>`;
-  return `<div class="setlist-item${item.kind === "pending" ? " pending" : ""}">
+  return `<div class="setlist-item${item.kind === "pending" || missing ? " pending" : ""}">
     <span class="item-index">${String(index + 1).padStart(2, "0")}</span>
     ${cover}
     <span class="item-info">
-      <button class="item-title" type="button" data-open-it="${index}" ${!score ? "disabled" : ""}>${escapeHtml(title)}${item.kind === "pending" ? `<span class="item-status">待补谱</span>` : ""}</button>
+      <button class="item-title" type="button" data-open-it="${index}" ${!score ? "disabled" : ""}>${escapeHtml(title)}${status ? `<span class="item-status">${status}</span>` : ""}</button>
       <span class="item-sub">${escapeHtml(sub)}</span>
     </span>
     <span class="item-actions">${open}${edits}</span>
@@ -829,8 +831,8 @@ function addScoreToSetlist(sl, scoreId, linkIndex = null) {
   if (!sl) return false;
   const score = state.items.find((item) => item.id === scoreId);
   if (!score) return false;
-  const newItem = { kind: "score", scoreId, itemId: uid("i") };
-  if (linkIndex !== null && sl.items[linkIndex]?.kind === "pending") {
+  const newItem = { kind: "score", scoreId, title: score.title, itemId: uid("i") };
+  if (linkIndex !== null && sl.items[linkIndex]) {
     if (sl.items[linkIndex].composer) newItem.composer = sl.items[linkIndex].composer;
     sl.items[linkIndex] = newItem;
     touchSetlist(sl);
@@ -988,7 +990,7 @@ function encodeSetlist(sl) {
     d: sl.date || "",
     s: sl.venue || "",
     i: sl.items.map((item) => item.kind === "score"
-      ? { k: "s", id: item.scoreId, c: item.composer || "" }
+      ? { k: "s", id: item.scoreId, c: item.composer || "", t: item.title || "" }
       : { k: "p", t: item.title, c: item.composer || "" }),
   };
   const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
@@ -1010,7 +1012,7 @@ function decodeSetlist(hash) {
       date: payload.d || "",
       venue: payload.s || "",
       items: payload.i.map((item) => item.k === "s"
-        ? { kind: "score", scoreId: item.id, composer: item.c || "", itemId: uid("i") }
+        ? { kind: "score", scoreId: item.id, composer: item.c || "", title: item.t || "", itemId: uid("i") }
         : { kind: "pending", title: item.t || "", composer: item.c || "", itemId: uid("i") }),
       shared: true,
       updatedAt: new Date().toISOString(),
@@ -1094,7 +1096,7 @@ function seedSetlistIfNeeded() {
   const items = SEED_SONGS.map(([composer, title]) => {
     const score = state.items.find((item) => normalizeKey(item.title) === normalizeKey(title));
     return score
-      ? { kind: "score", scoreId: score.id, composer, itemId: uid("i") }
+      ? { kind: "score", scoreId: score.id, title, composer, itemId: uid("i") }
       : { kind: "pending", title, composer, itemId: uid("i") };
   });
   const sl = {
