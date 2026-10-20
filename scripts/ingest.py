@@ -639,6 +639,7 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="只统计，不复制文件")
     parser.add_argument("--prune", action="store_true", help="显式清理 scores/ 和 thumbs/ 里这次没生成的孤儿文件")
     parser.add_argument("--no-extract", action="store_true", help="不解压源目录里的 zip")
+    parser.add_argument("--allow-empty", action="store_true", help="源目录没有可用曲谱时也生成空索引")
     args = parser.parse_args()
 
     source_root = Path(args.src).expanduser().resolve()
@@ -670,7 +671,7 @@ def main() -> int:
     if not args.no_extract:
         skipped = [item for item in skipped if not item["path"].lower().endswith(".zip")]
 
-    if not entries:
+    if not entries and not args.allow_empty:
         eprint("没有找到任何 PDF 或图片。请确认路径，或检查扩展名。")
         return 3
 
