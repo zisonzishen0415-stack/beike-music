@@ -13,11 +13,13 @@
 
 ## 上传曲谱（网页操作，推荐）
 
-站点上的「上传曲谱」按钮会打开 GitHub 的上传页：
+站点上的「上传曲谱」按钮在页面内直接上传，不会离开站点。第一次使用需要一个 GitHub fine-grained token：
 
-1. 把 PDF / JPG / PNG / WebP / ZIP 拖进 `uploads/`（可以建子文件夹），Commit changes。
-2. GitHub Actions 自动解压、按页码合并、转 WebP、去重、生成索引。
-3. 提交 `scores/`、`thumbs/`、`data/scores.json`，Pages 自动更新，约 1–2 分钟。
+1. 打开 GitHub 的 fine-grained token 创建页，Repository access 只选 `beike-music`。
+2. Permissions 里把 `Contents` 设为 `Read and write`，生成后复制。
+3. 回到网页粘贴 token。它只保存在当前浏览器，不写进代码。
+
+之后把 PDF / JPG / PNG / WebP / ZIP 拖进上传框（可多选），点「开始上传」。文件提交到 `uploads/` 后，GitHub Actions 自动解压、按页码合并、转 WebP、去重、生成索引，并部署 Pages，约 1–2 分钟。
 
 歌单里的「待补谱」上传后可以在歌单里点「挂谱」接上。
 

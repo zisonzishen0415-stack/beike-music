@@ -60,9 +60,6 @@ const el = {
   setlistDetail: document.getElementById("setlist-detail"),
   setlistCount: document.getElementById("setlist-count"),
   newSetlist: document.getElementById("new-setlist"),
-  exportSetlists: document.getElementById("export-setlists"),
-  importSetlists: document.getElementById("import-setlists"),
-  importSetlistsFile: document.getElementById("import-setlists-file"),
   setlistModal: document.getElementById("setlist-modal"),
   setlistForm: document.getElementById("setlist-form"),
   setlistName: document.getElementById("setlist-name"),
@@ -79,6 +76,18 @@ const el = {
   addSetlistList: document.getElementById("add-setlist-list"),
   addSetlistNew: document.getElementById("add-setlist-new"),
   viewerAddSetlist: document.getElementById("viewer-add-setlist"),
+  uploadModal: document.getElementById("upload-modal"),
+  uploadSetup: document.getElementById("upload-setup"),
+  uploadMain: document.getElementById("upload-main"),
+  uploadToken: document.getElementById("upload-token"),
+  uploadSetupStatus: document.getElementById("upload-setup-status"),
+  uploadSaveToken: document.getElementById("upload-save-token"),
+  uploadDrop: document.getElementById("upload-drop"),
+  uploadFiles: document.getElementById("upload-files"),
+  uploadList: document.getElementById("upload-list"),
+  uploadCommit: document.getElementById("upload-commit"),
+  uploadForget: document.getElementById("upload-forget"),
+  uploadStatus: document.getElementById("upload-status"),
   toast: document.getElementById("toast"),
 };
 
@@ -311,7 +320,7 @@ function attachImageFallbacks() {
       if (parent && !parent.querySelector(".fallback")) {
         const fallback = document.createElement("span");
         fallback.className = "fallback";
-        fallback.textContent = "𝄞";
+        fallback.textContent = "无图";
         fallback.setAttribute("aria-hidden", "true");
         parent.appendChild(fallback);
       }
@@ -695,7 +704,7 @@ function renderSetlistIndex() {
     el.setlistsList.innerHTML = `<div class="empty-setlists">
       <h2>还没有歌单</h2>
       <p>新建一个演出歌单，把要演的谱子按顺序收进去。</p>
-      <button class="btn-dark" type="button" data-empty-new>＋ 新建歌单</button>
+      <button class="btn-dark" type="button" data-empty-new>新建歌单</button>
     </div>`;
     return;
   }
@@ -716,7 +725,6 @@ function setlistCardMarkup(sl) {
     <div class="setlist-actions">
       <button class="mini-btn" type="button" data-open-setlist="${escapeHtml(sl.id)}">打开</button>
       <button class="mini-btn" type="button" data-share-setlist="${escapeHtml(sl.id)}">分享</button>
-      <button class="mini-btn" type="button" data-export-setlist="${escapeHtml(sl.id)}">导出</button>
       <button class="mini-btn danger" type="button" data-delete-setlist="${escapeHtml(sl.id)}">删除</button>
     </div>
   </article>`;
@@ -736,15 +744,14 @@ function renderSetlistDetail() {
   const actions = shared
     ? `<button class="btn-dark" type="button" data-import-shared>导入到我的歌单</button>
        <button class="btn-line" type="button" data-print-setlist>打印</button>`
-    : `<button class="btn-dark" type="button" data-add-song>＋ 添加曲谱</button>
+    : `<button class="btn-dark" type="button" data-add-song>添加曲谱</button>
        <button class="btn-line" type="button" data-share-current>分享</button>
-       <button class="btn-line" type="button" data-export-current>导出</button>
        <button class="btn-line" type="button" data-print-setlist>打印</button>
        <button class="btn-line danger" type="button" data-delete-current>删除</button>`;
 
   el.setlistDetail.innerHTML = `<div class="detail-head">
     <div class="detail-top">
-      <button class="detail-back" type="button" data-back-setlists>← 全部歌单</button>
+      <button class="detail-back" type="button" data-back-setlists>全部歌单</button>
       <div class="detail-actions">${actions}</div>
     </div>
     <input class="detail-title-input" data-detail-field="name" value="${escapeHtml(sl.name)}" aria-label="歌单名称" ${shared ? "disabled" : ""}>
@@ -770,7 +777,7 @@ function setlistItemMarkup(item, index, shared) {
       : (item.composer ? `${item.composer} · 曲谱已移除` : "曲谱已移除，可重新挂谱");
   const cover = score
     ? `<span class="item-cover"><img src="${escapeHtml(score.thumb)}" alt="" loading="lazy"></span>`
-    : `<span class="item-cover pending-cover" aria-hidden="true">＋</span>`;
+    : `<span class="item-cover pending-cover" aria-hidden="true"></span>`;
   const open = score
     ? `<button class="mini-btn" type="button" data-open-score="${escapeHtml(score.id)}">看谱</button>`
     : (!shared && (item.kind === "pending" || missing) ? `<button class="mini-btn" type="button" data-item-link="${index}">挂谱</button>` : "");
@@ -977,7 +984,7 @@ function openAddToSetlist(scoreId) {
   el.addSetlistList.innerHTML = setlists.length
     ? setlists.map((sl) => `<button class="add-setlist-item" type="button" data-add-to-setlist="${escapeHtml(sl.id)}">
         <span><b>${escapeHtml(sl.name)}</b><span>${escapeHtml(sl.venue || "未填场地")} · ${sl.items.length} 首</span></span>
-        <span>加入 →</span>
+        <span>加入</span>
       </button>`).join("")
     : `<div class="add-setlist-empty">还没有歌单，先新建一个。</div>`;
   showModal(el.addSetlistModal);
@@ -1033,57 +1040,6 @@ async function shareSetlist(sl) {
   }
 }
 
-function downloadJson(filename, data) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-}
-
-function exportSetlist(sl) {
-  downloadJson(`${sl.name || "setlist"}.json`, { version: 1, setlists: [sl] });
-}
-
-function exportAllSetlists() {
-  downloadJson("beike-setlists.json", { version: 1, setlists: setlistState.items });
-}
-
-function importSetlistsFromFile(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(String(reader.result || ""));
-      const incoming = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.setlists) ? parsed.setlists : parsed?.setlist ? [parsed.setlist] : [];
-      let added = 0;
-      for (const raw of incoming) {
-        if (!raw || typeof raw.name !== "string" || !Array.isArray(raw.items)) continue;
-        setlistState.items.push({
-          id: uid("sl"),
-          name: raw.name,
-          date: raw.date || "",
-          venue: raw.venue || "",
-          items: raw.items.filter((item) => item && (item.kind === "score" || item.kind === "pending")).map((item) => ({ ...item, itemId: item.itemId || uid("i") })),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-        added += 1;
-      }
-      saveSetlists();
-      renderSetlistIndex();
-      toast(added ? `导入了 ${added} 个歌单` : "没有可导入的歌单");
-    } catch (error) {
-      toast("导入失败：JSON 格式不对");
-      console.error(error);
-    }
-  };
-  reader.readAsText(file);
-}
-
 function toast(message) {
   el.toast.textContent = message;
   el.toast.hidden = false;
@@ -1113,6 +1069,222 @@ function seedSetlistIfNeeded() {
   saveSetlists();
 }
 
+/* ---------- in-page upload ---------- */
+
+const GH_OWNER = "zisonzishen0415-stack";
+const GH_REPO = "beike-music";
+const GH_BRANCH = "main";
+const GH_TOKEN_KEY = "beike-gh-token";
+const UPLOAD_EXTS = [".pdf", ".jpg", ".jpeg", ".png", ".webp", ".zip"];
+const uploadState = { files: [], busy: false };
+
+const getGhToken = () => localStorage.getItem(GH_TOKEN_KEY) || "";
+
+function setUploadStatus(message, kind = "", html = false) {
+  el.uploadStatus.className = `upload-status${kind ? ` ${kind}` : ""}`;
+  if (html) el.uploadStatus.innerHTML = message;
+  else el.uploadStatus.textContent = message;
+}
+
+function renderUploadView() {
+  const token = getGhToken();
+  el.uploadSetup.hidden = Boolean(token);
+  el.uploadMain.hidden = !token;
+  if (token) renderUploadList();
+}
+
+function openUploadModal() {
+  showModal(el.uploadModal);
+  renderUploadView();
+  setUploadStatus("");
+  el.uploadSetupStatus.textContent = "";
+  el.uploadSetupStatus.className = "upload-status";
+  setTimeout(() => {
+    if (getGhToken()) el.uploadDrop.focus();
+    else el.uploadToken.focus();
+  }, 20);
+}
+
+function renderUploadList() {
+  el.uploadList.hidden = !uploadState.files.length;
+  if (!uploadState.files.length) {
+    el.uploadList.innerHTML = "";
+  } else {
+    el.uploadList.innerHTML = uploadState.files.map((file, index) => {
+      const name = file.webkitRelativePath || file.name;
+      return `<div class="upload-file">
+        <span class="name">${escapeHtml(name)}</span>
+        <span class="size">${fmtBytes(file.size)}</span>
+        <button type="button" data-upload-remove="${index}">移除</button>
+      </div>`;
+    }).join("");
+  }
+  el.uploadCommit.disabled = uploadState.busy || !uploadState.files.length;
+}
+
+function uploadPath(file) {
+  const clean = (value) => value
+    .replace(/\\/g, "/")
+    .split("/")
+    .map((part) => part.trim())
+    .filter((part) => part && part !== "." && part !== "..")
+    .join("/");
+  const raw = clean(file.webkitRelativePath || file.name);
+  return ["uploads", raw].filter(Boolean).join("/");
+}
+
+function addUploadFiles(fileList) {
+  const incoming = [...fileList];
+  const supported = incoming.filter((file) => UPLOAD_EXTS.includes(`.${file.name.split(".").pop().toLowerCase()}`));
+  uploadState.files.push(...supported);
+  renderUploadList();
+  const skipped = incoming.length - supported.length;
+  setUploadStatus(skipped ? `已选择 ${supported.length} 个，跳过 ${skipped} 个不支持的文件` : `已选择 ${supported.length} 个文件`);
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = () => reject(reader.error || new Error("文件读取失败"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function ghFetch(path, options = {}, token = getGhToken()) {
+  const response = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}${path}`, {
+    ...options,
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
+      "X-GitHub-Api-Version": "2022-11-28",
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.headers || {}),
+    },
+  });
+  const text = await response.text();
+  let data = null;
+  if (text) {
+    try { data = JSON.parse(text); } catch { data = { message: text }; }
+  }
+  if (!response.ok) {
+    const error = new Error(data?.message || `GitHub API ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+async function saveUploadToken() {
+  const token = el.uploadToken.value.trim();
+  if (!token) {
+    el.uploadSetupStatus.textContent = "先粘贴 token";
+    el.uploadSetupStatus.className = "upload-status error";
+    return;
+  }
+  el.uploadSaveToken.disabled = true;
+  el.uploadSetupStatus.textContent = "验证中…";
+  el.uploadSetupStatus.className = "upload-status";
+  try {
+    await ghFetch("", {}, token);
+    localStorage.setItem(GH_TOKEN_KEY, token);
+    el.uploadToken.value = "";
+    el.uploadSetupStatus.textContent = "";
+    renderUploadView();
+    el.uploadDrop.focus();
+  } catch (error) {
+    el.uploadSetupStatus.textContent = error.status === 401
+      ? "token 无效或已过期"
+      : `验证失败：${error.message}（确认 token 只选了此仓库，且有 Contents 读写权限）`;
+    el.uploadSetupStatus.className = "upload-status error";
+  } finally {
+    el.uploadSaveToken.disabled = false;
+  }
+}
+
+async function uploadNow() {
+  if (uploadState.busy) return;
+  const files = [...uploadState.files];
+  if (!files.length) return;
+  if (!getGhToken()) {
+    renderUploadView();
+    return;
+  }
+  const tooBig = files.find((file) => file.size > 100 * 1024 * 1024);
+  if (tooBig) {
+    setUploadStatus(`文件超过 100MB：${tooBig.name}`, "error");
+    return;
+  }
+
+  uploadState.busy = true;
+  el.uploadCommit.disabled = true;
+  el.uploadCommit.textContent = "上传中…";
+  setUploadStatus(`读取 ${GH_BRANCH} 分支…`);
+
+  try {
+    const entries = new Map();
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      setUploadStatus(`上传文件 ${index + 1}/${files.length}：${file.name}`);
+      const base64 = await fileToBase64(file);
+      const blob = await ghFetch("/git/blobs", {
+        method: "POST",
+        body: JSON.stringify({ content: base64, encoding: "base64" }),
+      });
+      const path = uploadPath(file);
+      entries.set(path, { path, mode: "100644", type: "blob", sha: blob.sha });
+    }
+
+    setUploadStatus("提交到 GitHub…");
+    let committed = false;
+    for (let attempt = 0; attempt < 2 && !committed; attempt += 1) {
+      const ref = await ghFetch(`/git/ref/heads/${GH_BRANCH}`);
+      const head = ref.object.sha;
+      const parent = await ghFetch(`/git/commits/${head}`);
+      const tree = await ghFetch("/git/trees", {
+        method: "POST",
+        body: JSON.stringify({ base_tree: parent.tree.sha, tree: [...entries.values()] }),
+      });
+      const commit = await ghFetch("/git/commits", {
+        method: "POST",
+        body: JSON.stringify({
+          message: `Upload ${files.length} sheet music file(s)`,
+          tree: tree.sha,
+          parents: [head],
+        }),
+      });
+      try {
+        await ghFetch(`/git/refs/heads/${GH_BRANCH}`, {
+          method: "PATCH",
+          body: JSON.stringify({ sha: commit.sha, force: false }),
+        });
+        committed = true;
+      } catch (error) {
+        if (attempt === 1) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 600));
+      }
+    }
+
+    uploadState.files = [];
+    renderUploadList();
+    setUploadStatus(
+      `已提交 ${files.length} 个文件。Actions 正在入库，1–2 分钟后刷新。<a href="https://github.com/${GH_OWNER}/${GH_REPO}/actions/workflows/ingest.yml" target="_blank" rel="noopener">查看 Actions</a>`,
+      "ok",
+      true,
+    );
+    toast("已提交，等待自动入库");
+  } catch (error) {
+    setUploadStatus(
+      `上传失败：${error.message}${error.status === 401 || error.status === 403 ? "（检查 token 是否有 Contents 读写权限）" : ""}`,
+      "error",
+    );
+  } finally {
+    uploadState.busy = false;
+    el.uploadCommit.textContent = "开始上传";
+    renderUploadList();
+  }
+}
+
 /* ---------- events ---------- */
 
 let searchTimer = 0;
@@ -1123,13 +1295,6 @@ function bindEvents() {
   });
 
   el.newSetlist.addEventListener("click", () => openSetlistModal());
-  el.exportSetlists.addEventListener("click", exportAllSetlists);
-  el.importSetlists.addEventListener("click", () => el.importSetlistsFile.click());
-  el.importSetlistsFile.addEventListener("change", () => {
-    const file = el.importSetlistsFile.files && el.importSetlistsFile.files[0];
-    if (file) importSetlistsFromFile(file);
-    el.importSetlistsFile.value = "";
-  });
 
   el.setlistForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -1153,6 +1318,64 @@ function bindEvents() {
       const modal = button.closest(".modal");
       if (modal) hideModal(modal);
     });
+  });
+
+  document.addEventListener("click", (event) => {
+    const trigger = event.target.closest("[data-upload-open]");
+    if (!trigger) return;
+    event.preventDefault();
+    openUploadModal();
+  });
+
+  el.uploadSaveToken.addEventListener("click", saveUploadToken);
+  el.uploadToken.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    saveUploadToken();
+  });
+  el.uploadDrop.addEventListener("click", (event) => {
+    if (event.target === el.uploadFiles) return;
+    el.uploadFiles.click();
+  });
+  el.uploadDrop.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    el.uploadFiles.click();
+  });
+  el.uploadFiles.addEventListener("change", () => {
+    if (el.uploadFiles.files) addUploadFiles(el.uploadFiles.files);
+    el.uploadFiles.value = "";
+  });
+  ["dragenter", "dragover"].forEach((type) => {
+    el.uploadDrop.addEventListener(type, (event) => {
+      event.preventDefault();
+      el.uploadDrop.classList.add("is-dragging");
+    });
+  });
+  ["dragleave", "drop"].forEach((type) => {
+    el.uploadDrop.addEventListener(type, (event) => {
+      event.preventDefault();
+      el.uploadDrop.classList.remove("is-dragging");
+    });
+  });
+  el.uploadDrop.addEventListener("drop", (event) => {
+    if (event.dataTransfer?.files?.length) addUploadFiles(event.dataTransfer.files);
+  });
+  el.uploadList.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-upload-remove]");
+    if (!button) return;
+    uploadState.files.splice(Number(button.dataset.uploadRemove), 1);
+    renderUploadList();
+  });
+  el.uploadCommit.addEventListener("click", uploadNow);
+  el.uploadForget.addEventListener("click", () => {
+    localStorage.removeItem(GH_TOKEN_KEY);
+    uploadState.files = [];
+    renderUploadView();
+    setUploadStatus("");
+    el.uploadSetupStatus.textContent = "";
+    el.uploadSetupStatus.className = "upload-status";
+    el.uploadToken.focus();
   });
 
   let pickerTimer = 0;
@@ -1225,12 +1448,6 @@ function bindEvents() {
       if (sl) shareSetlist(sl);
       return;
     }
-    const exp = event.target.closest("[data-export-setlist]");
-    if (exp) {
-      const sl = setlistState.items.find((item) => item.id === exp.dataset.exportSetlist);
-      if (sl) exportSetlist(sl);
-      return;
-    }
     const del = event.target.closest("[data-delete-setlist]");
     if (del) {
       const sl = setlistState.items.find((item) => item.id === del.dataset.deleteSetlist);
@@ -1259,12 +1476,6 @@ function bindEvents() {
     if (share) {
       const sl = currentSetlist();
       if (sl) shareSetlist(sl);
-      return;
-    }
-    const exp = event.target.closest("[data-export-current]");
-    if (exp) {
-      const sl = currentSetlist();
-      if (sl) exportSetlist(sl);
       return;
     }
     const del = event.target.closest("[data-delete-current]");
