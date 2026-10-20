@@ -1,0 +1,4 @@
+Pillow>=10.0
+PyMuPDF>=1.24
+pypinyin>=0.51
+opencc-python-reimplemented>=0.1.7

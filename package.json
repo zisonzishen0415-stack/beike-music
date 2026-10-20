@@ -1,0 +1,17 @@
+{
+  "name": "beike-music",
+  "version": "1.0.0",
+  "private": true,
+  "description": "贝壳音乐曲谱库：静态检索与在线预览。",
+  "type": "module",
+  "scripts": {
+    "vendor": "node scripts/vendor-pdfjs.mjs && node scripts/vendor-fonts.mjs",
+    "ingest": "python scripts/ingest.py",
+    "serve": "python -m http.server 8000",
+    "logo": "python scripts/prepare-logo.py"
+  },
+  "dependencies": {
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "pdfjs-dist": "5.4.149"
+  }
+}

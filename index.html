@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>贝壳音乐 · 曲谱库</title>
+  <meta name="description" content="贝壳音乐曲谱库：按歌名、拼音、首字母或歌手模糊搜索，PDF 与图片谱在线预览。">
+  <meta name="theme-color" content="#fff9f1">
+  <link rel="icon" href="assets/brand-mark.png" type="image/png">
+  <link rel="stylesheet" href="assets/style.css?v=17">
+</head>
+<body>
+  <a class="skip-link" href="#results">跳到曲谱列表</a>
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <div class="page">
+    <header class="hero">
+      <a class="logo" href="./" aria-label="贝壳音乐首页">
+        <img src="assets/brand-logo.png" alt="贝壳音乐 BEI KE MUSIC">
+      </a>
+
+      <div class="view-tabs" role="tablist" aria-label="视图">
+        <button type="button" class="view-tab active" data-app-view="library" role="tab" aria-selected="true">曲谱库</button>
+        <button type="button" class="view-tab" data-app-view="setlists" role="tab" aria-selected="false">演出歌单 <span id="setlist-count" class="tab-count" hidden>0</span></button>
+      </div>
+
+      <form class="searchbar" id="searchbox" role="search">
+        <span class="prompt" aria-hidden="true">❯</span>
+        <input id="search" type="search" placeholder="搜歌名 / 拼音 / 首字母 / 歌手" autocomplete="off" spellcheck="false" aria-label="搜索曲谱">
+        <kbd class="search-kbd" aria-hidden="true">/</kbd>
+        <button id="clear-search" class="clear-search" type="button" aria-label="清空搜索" hidden>×</button>
+        <button id="search-submit" class="search-submit" type="submit">搜索</button>
+      </form>
+    </header>
+
+    <main class="archive" id="library-view" data-app-panel="library">
+      <section class="works">
+        <div class="works-head">
+          <h1 id="works-title">全部曲谱 <span>/ ALL WORKS</span></h1>
+          <div class="works-tools">
+            <div class="works-count"><b id="stat-count">—</b> ITEMS</div>
+            <label class="sort-box">
+              <span>SORT</span>
+              <select id="sort">
+                <option value="relevance">RELEVANCE</option>
+                <option value="title">TITLE</option>
+                <option value="newest">NEWEST</option>
+                <option value="largest">SIZE</option>
+              </select>
+            </label>
+            <div id="view-toggle" class="view-toggle" role="group" aria-label="视图">
+              <button type="button" data-view="grid" class="active" aria-label="网格视图">GRID</button>
+              <button type="button" data-view="list" aria-label="列表视图">LIST</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="results" class="results grid" aria-live="polite" aria-busy="true">
+          <div class="work-card is-skeleton" aria-hidden="true"><span class="work-cover"></span><span class="work-caption"><span class="skeleton-line w70"></span><span class="skeleton-line w40"></span></span></div>
+          <div class="work-card is-skeleton" aria-hidden="true"><span class="work-cover"></span><span class="work-caption"><span class="skeleton-line w55"></span><span class="skeleton-line w30"></span></span></div>
+          <div class="work-card is-skeleton" aria-hidden="true"><span class="work-cover"></span><span class="work-caption"><span class="skeleton-line w65"></span><span class="skeleton-line w35"></span></span></div>
+          <div class="work-card is-skeleton" aria-hidden="true"><span class="work-cover"></span><span class="work-caption"><span class="skeleton-line w45"></span><span class="skeleton-line w40"></span></span></div>
+          <div class="work-card is-skeleton" aria-hidden="true"><span class="work-cover"></span><span class="work-caption"><span class="skeleton-line w60"></span><span class="skeleton-line w30"></span></span></div>
+          <div class="work-card is-skeleton" aria-hidden="true"><span class="work-cover"></span><span class="work-caption"><span class="skeleton-line w50"></span><span class="skeleton-line w35"></span></span></div>
+          <div class="work-card is-skeleton" aria-hidden="true"><span class="work-cover"></span><span class="work-caption"><span class="skeleton-line w55"></span><span class="skeleton-line w30"></span></span></div>
+          <div class="work-card is-skeleton" aria-hidden="true"><span class="work-cover"></span><span class="work-caption"><span class="skeleton-line w65"></span><span class="skeleton-line w35"></span></span></div>
+        </div>
+        <div id="sentinel" class="sentinel" hidden><span>SCROLL FOR MORE</span></div>
+      </section>
+    </main>
+
+    <section class="archive setlists-archive" id="setlists-view" data-app-panel="setlists" hidden>
+      <div id="setlist-index">
+        <div class="setlists-head">
+          <h1>演出歌单 <span>/ SETLISTS</span></h1>
+          <div class="setlists-actions">
+            <button id="new-setlist" class="btn-dark" type="button">＋ 新建歌单</button>
+            <button id="export-setlists" class="btn-line" type="button">导出全部</button>
+            <button id="import-setlists" class="btn-line" type="button">导入 JSON</button>
+            <input id="import-setlists-file" type="file" accept="application/json,.json" hidden>
+          </div>
+        </div>
+        <div id="setlists-list" class="setlists-list"></div>
+        <p class="setlists-note">歌单保存在这台设备的浏览器里。换设备用「分享链接」或导出 JSON。</p>
+      </div>
+      <div id="setlist-detail" class="setlist-detail" hidden></div>
+    </section>
+
+    <footer class="footer">
+      <p>© 2026 贝壳音乐 / BEI KE MUSIC</p>
+      <p>曲谱仅供学习交流，版权归原作者所有</p>
+      <p>POWERED BY ZISONZISHEN · GITHUB PAGES</p>
+    </footer>
+  </div>
+
+  <div id="viewer" class="viewer" hidden>
+    <div class="viewer-scrim" data-close></div>
+    <div class="viewer-shell" role="dialog" aria-modal="true" aria-labelledby="viewer-title">
+      <header class="viewer-head">
+        <div class="viewer-heading">
+          <p class="viewer-kicker" id="viewer-kicker">—</p>
+          <h2 id="viewer-title">—</h2>
+        </div>
+        <div class="viewer-actions">
+          <button id="info-toggle" class="btn ghost info-toggle" type="button" aria-expanded="false">INFO</button>
+          <button id="viewer-add-setlist" class="btn ghost add-setlist-btn" type="button">＋ 歌单</button>
+          <a id="viewer-download" class="btn primary" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+              <path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5M4.5 19.5h15"></path>
+            </svg>
+            DOWNLOAD
+          </a>
+          <button id="viewer-copy" class="btn ghost" type="button">COPY LINK</button>
+          <button class="icon-btn" type="button" data-close aria-label="关闭预览">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="viewer-body">
+        <div class="viewer-stage" id="viewer-stage">
+          <div class="page-loading" id="page-loading">LOADING…</div>
+          <canvas id="pdf-canvas" hidden></canvas>
+          <img id="image-page" alt="" hidden>
+        </div>
+        <aside class="viewer-info" id="viewer-info">
+          <dl>
+            <dt>作者 / AUTHOR</dt><dd id="info-composer">—</dd>
+            <dt>页数 / PAGES</dt><dd id="info-pages">—</dd>
+            <dt>大小 / SIZE</dt><dd id="info-size">—</dd>
+            <dt>格式 / FORMAT</dt><dd id="info-format">—</dd>
+            <dt>来源 / SOURCE</dt><dd id="info-source" class="source">—</dd>
+          </dl>
+          <div id="info-tags" class="info-tags"></div>
+        </aside>
+      </div>
+
+      <div id="page-strip" class="page-strip" aria-label="页码" hidden></div>
+
+      <footer class="viewer-foot">
+        <button id="prev-page" class="page-nav-btn" type="button" aria-label="上一页">←</button>
+        <span class="page-indicator">
+          <input id="page-input" type="number" min="1" value="1" aria-label="页码">
+          <span aria-hidden="true">/</span>
+          <span id="page-total">1</span>
+        </span>
+        <button id="next-page" class="page-nav-btn" type="button" aria-label="下一页">→</button>
+        <div class="zoom">
+          <button id="zoom-out" class="page-nav-btn" type="button" aria-label="缩小">−</button>
+          <button id="zoom-label" class="zoom-reset" type="button" title="恢复整页">100%</button>
+          <button id="zoom-in" class="page-nav-btn" type="button" aria-label="放大">＋</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal" id="setlist-modal" hidden>
+    <div class="modal-scrim" data-modal-close></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="setlist-modal-title">
+      <div class="modal-head">
+        <h2 id="setlist-modal-title">新建歌单</h2>
+        <button class="icon-btn" type="button" data-modal-close aria-label="关闭">×</button>
+      </div>
+      <form id="setlist-form" class="modal-body">
+        <label class="field">名称
+          <input id="setlist-name" required maxlength="60" placeholder="例如：周六演出">
+        </label>
+        <div class="field-row">
+          <label class="field">日期
+            <input id="setlist-date" type="date">
+          </label>
+          <label class="field">场地
+            <input id="setlist-venue" maxlength="60" placeholder="例如：XX Livehouse">
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-line" data-modal-close>取消</button>
+          <button type="submit" class="btn-dark">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="song-picker" hidden>
+    <div class="modal-scrim" data-modal-close></div>
+    <div class="modal-panel wide" role="dialog" aria-modal="true" aria-labelledby="song-picker-title">
+      <div class="modal-head">
+        <h2 id="song-picker-title">添加曲谱</h2>
+        <button class="icon-btn" type="button" data-modal-close aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="picker-search">
+          <span aria-hidden="true">❯</span>
+          <input id="picker-search" type="search" placeholder="搜歌名 / 拼音 / 首字母 / 歌手" autocomplete="off">
+        </div>
+        <div class="picker-tabs">
+          <button type="button" class="active" data-picker-tab="library">从曲库添加</button>
+          <button type="button" data-picker-tab="pending">手动加待补谱</button>
+        </div>
+        <div id="picker-results" class="picker-results"></div>
+        <form id="pending-form" class="pending-form" hidden>
+          <label class="field">歌名
+            <input id="pending-title" required maxlength="80" placeholder="例如：遇见">
+          </label>
+          <label class="field">歌手
+            <input id="pending-composer" maxlength="60" placeholder="例如：孙燕姿">
+          </label>
+          <button type="submit" class="btn-dark">添加到歌单</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="add-setlist-modal" hidden>
+    <div class="modal-scrim" data-modal-close></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="add-setlist-title">
+      <div class="modal-head">
+        <h2 id="add-setlist-title">加入歌单</h2>
+        <button class="icon-btn" type="button" data-modal-close aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="add-setlist-list" class="add-setlist-list"></div>
+        <button id="add-setlist-new" class="btn-line wide-btn" type="button">＋ 新建歌单并加入</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script type="module" src="assets/app.js?v=17"></script>
+</body>
+</html>
