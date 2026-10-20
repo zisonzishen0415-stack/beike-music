@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: ingest-uploads
@@ -16,6 +18,9 @@ concurrency:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,3 +47,27 @@ jobs:
             git commit -m "Rebuild library from uploads"
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
+
+      - name: Build Pages artifact
+        if: github.ref == 'refs/heads/main'
+        run: |
+          rm -rf _site
+          mkdir -p _site
+          for item in index.html assets data scores thumbs .nojekyll; do
+            if [ -e "$item" ]; then cp -r "$item" _site/; fi
+          done
+
+      - name: Configure Pages
+        if: github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        id: deployment
+        uses: actions/deploy-pages@v4
