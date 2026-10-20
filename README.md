@@ -11,6 +11,18 @@
 - 内容完全相同的副本自动去重，并在报告里列出
 - ZIP 自动解压，修复 Windows 压缩包中文文件名乱码，防路径穿越；`xx1.jpg / xx2.jpg` 会按页码合并
 
+## 上传曲谱（网页操作，推荐）
+
+站点上的「上传曲谱」按钮会打开 GitHub 的上传页：
+
+1. 把 PDF / JPG / PNG / WebP / ZIP 拖进 `uploads/`（可以建子文件夹），Commit changes。
+2. GitHub Actions 自动解压、按页码合并、转 WebP、去重、生成索引。
+3. 提交 `scores/`、`thumbs/`、`data/scores.json`，Pages 自动更新，约 1–2 分钟。
+
+歌单里的「待补谱」上传后可以在歌单里点「挂谱」接上。
+
+本地也可以跑 `python scripts/ingest.py --src uploads --prune` 预览。
+
 ## 本地预览
 
 ```bash

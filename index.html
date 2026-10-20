@@ -7,7 +7,7 @@
   <meta name="description" content="贝壳音乐曲谱库：按歌名、拼音、首字母或歌手模糊搜索，PDF 与图片谱在线预览。">
   <meta name="theme-color" content="#fff9f1">
   <link rel="icon" href="assets/brand-mark.png" type="image/png">
-  <link rel="stylesheet" href="assets/style.css?v=17">
+  <link rel="stylesheet" href="assets/style.css?v=19">
 </head>
 <body>
   <a class="skip-link" href="#results">跳到曲谱列表</a>
@@ -52,6 +52,7 @@
               <button type="button" data-view="grid" class="active" aria-label="网格视图">GRID</button>
               <button type="button" data-view="list" aria-label="列表视图">LIST</button>
             </div>
+            <a class="btn-line upload-link" href="https://github.com/zisonzishen0415-stack/beike-music/upload/main/uploads" target="_blank" rel="noopener">上传曲谱</a>
           </div>
         </div>
 
@@ -77,6 +78,7 @@
             <button id="new-setlist" class="btn-dark" type="button">＋ 新建歌单</button>
             <button id="export-setlists" class="btn-line" type="button">导出全部</button>
             <button id="import-setlists" class="btn-line" type="button">导入 JSON</button>
+            <a class="btn-line upload-link" href="https://github.com/zisonzishen0415-stack/beike-music/upload/main/uploads" target="_blank" rel="noopener">上传曲谱</a>
             <input id="import-setlists-file" type="file" accept="application/json,.json" hidden>
           </div>
         </div>
@@ -229,6 +231,6 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-  <script type="module" src="assets/app.js?v=17"></script>
+  <script type="module" src="assets/app.js?v=19"></script>
 </body>
 </html>

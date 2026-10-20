@@ -1049,7 +1049,7 @@ body.app-setlists .searchbar { display: none; }
 }
 .btn-dark { border: 1.5px solid var(--ink); background: var(--ink); color: #fff; }
 .btn-dark:hover { border-color: var(--orange); background: var(--orange); color: #151515; }
-.btn-line { border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--ink); }
+.btn-line { border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--ink); text-decoration: none; }
 .btn-line:hover { border-color: var(--orange); color: var(--accent); }
 .btn-line.danger:hover { border-color: var(--red); color: var(--red); }
 .wide-btn { width: 100%; margin-top: 12px; }

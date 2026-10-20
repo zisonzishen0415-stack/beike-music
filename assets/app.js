@@ -292,7 +292,7 @@ function emptyMarkup() {
     return `<div class="state">
       <p class="state-code">NO_DATA</p>
       <h2>曲谱库还是空的</h2>
-      <p>把下载好的曲谱放进一个文件夹，运行 <code>python scripts/ingest.py --src 那个文件夹</code>，刷新页面即可。</p>
+      <p>点「上传曲谱」把 PDF / 图片传到 GitHub 的 <code>uploads/</code>，Actions 会自动入库并发布，约 1–2 分钟后刷新。</p>
     </div>`;
   }
   return `<div class="state">
